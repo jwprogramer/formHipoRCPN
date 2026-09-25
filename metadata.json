@@ -1,0 +1,8 @@
+{
+  "name": "Declaração de Hipossuficiência TJRN - RCPN",
+  "description": "Aplicativo oficial de preenchimento, validação, assinatura digital e geração de Declaração de Hipossuficiência Econômica para Registro Civil das Pessoas Naturais (TJRN / CGJRN).",
+  "version": "1.0.0",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
