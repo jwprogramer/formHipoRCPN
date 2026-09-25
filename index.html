@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declaração de Hipossuficiência Econômica - TJRN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #525659; font-family: 'Arial', sans-serif; margin: 0; padding: 20px 0; }
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 12mm 15mm;
+            margin: 10mm auto;
+            background: white;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .header-line { border-bottom: 2px solid #004a80; padding-bottom: 10px; margin-bottom: 10px; }
+        .blue-tj { color: #004a80; }
+        .section-box { border: 1.5px solid #004a80; border-radius: 12px; display: flex; align-items: center; margin: 10px 0 5px 0; overflow: hidden; }
+        .section-num { background: #004a80; color: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; margin: 3px; }
+        .section-title { font-weight: bold; color: #004a80; padding-left: 10px; flex-grow: 1; font-size: 14px; }
+        .badge { font-size: 9px; font-weight: 800; padding: 4px 10px; text-transform: uppercase; }
+        .badge-serventia { background: #e8f5e9; color: #2e7d32; }
+        .badge-rogo { background: #fff3e0; color: #ef6c00; }
+        
+        .field-label { font-size: 11px; font-weight: bold; color: #333; margin-right: 5px; }
+        .input-line { border: none; border-bottom: 1px solid #000; font-size: 11px; padding: 1px 4px; flex-grow: 1; background: transparent; outline: none; }
+        .grid-row { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; margin-bottom: 8px; padding: 0 5px; }
+        
+        .info-blue-box { background: #f0f7ff; border-radius: 8px; padding: 10px; display: flex; gap: 12px; margin-top: 10px; border-left: 4px solid #004a80; }
+        .footer-text { font-size: 9px; color: #444; margin-top: auto; border-top: 1px solid #ccc; padding-top: 5px; }
+        .signature-box { border-top: 1px solid #000; text-align: center; font-size: 10px; margin-top: 30px; padding-top: 5px; }
+        
+        .thumb-box { width: 90px; height: 110px; border: 1px dashed #666; font-size: 9px; display: flex; align-items: center; justify-content: center; text-align: center; color: #666; }
+
+        /* Classes Adicionais para Validação e Preview */
+        .required-mark { color: red; font-weight: bold; }
+        .input-error { border-bottom: 2px solid red !important; background-color: #fff5f5 !important; }
+        #preview-modal-container { transform: scale(0.6); transform-origin: top center; }
+
+        @media print { .no-print { display: none; } .a4-page { margin: 0; box-shadow: none; } }
+	.html2pdf__page-break {
+    page-break-before: always;
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="no-print fixed top-10 right-10 z-50">
+        <button onclick="validarEAbrirConferencia()" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-4 px-10 rounded-full shadow-2xl transition">
+            CONFERIR E GERAR DECLARAÇÃO
+        </button>
+    </div>
+
+    <div id="form-content">
+        <!-- PÁGINA 1 -->
+        <div class="a4-page">
+            <div class="header-line flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img src="./imagens/tjrn.webp" style="height: 150px;">
+                </div>
+                <div class="text-right">
+                    <div class="flex items-center gap-3">
+                        <img src="./imagens/logoCGJ.webp" style="height: 100px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-2">
+                <div class="font-bold text-gray-700 text-sm tracking-widest uppercase">Registro Civil das Pessoas Naturais</div>
+                <div class="blue-tj font-black text-2xl mt-1">DECLARAÇÃO DE HIPOSSUFICIÊNCIA ECONÔMICA</div>
+            </div>
+
+            <div class="info-blue-box">
+                <div class="text-2xl">📝</div>
+                <div class="text-[10px] leading-snug">
+                    <b class="blue-tj">ANTES DE PREENCHER</b><br>
+                    Use este formulário somente quando a gratuidade depender da insuficiência de recursos. Não é exigido para atos gratuitos independentemente de renda nem para atos abrangidos por decisão judicial. Preencha um formulário para cada pessoa beneficiária.
+                </div>
+            </div>
+
+            <!-- Seção 1 -->
+            <div class="section-box">
+                <div class="section-num">1</div><div class="section-title">Dados da Serventia</div><div class="badge badge-serventia">Preenchimento da Serventia</div>
+            </div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Serventia:</span><input type="text" class="input-line" id="serventia"></div></div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Município/Comarca:</span><input type="text" class="input-line"></div></div>
+
+            <!-- Seção 2 -->
+            <div class="section-box">
+                <div class="section-num">2</div><div class="section-title">Dados da pessoa beneficiária</div>
+            </div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Nome completo <span class="required-mark">*</span>:</span><input type="text" class="input-line obrigatorio" id="beneficiario_nome" name="Nome Completo"></div></div>
+            <div class="grid-row">
+                <div class="col-span-7 flex"><span class="field-label">CPF ou RG <span class="required-mark">*</span>:</span><input type="text" class="input-line obrigatorio" name="CPF ou RG"></div>
+                <div class="col-span-5 flex"><span class="field-label">Data de nascimento:</span><input type="text" class="input-line"></div>
+            </div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Profissão:</span><input type="text" class="input-line"></div></div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Endereço <span class="required-mark">*</span>:</span><input type="text" class="input-line obrigatorio" name="Endereço"></div></div>
+            <div class="grid-row">
+                <div class="col-span-8 flex"><span class="field-label">Município/UF <span class="required-mark">*</span>:</span><input type="text" class="input-line obrigatorio" name="Município/UF"></div>
+                <div class="col-span-4 flex"><span class="field-label">CEP:</span><input type="text" class="input-line"></div>
+            </div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Telefone ou e-mail:</span><input type="text" class="input-line"></div></div>
+
+            <!-- Seção 3 -->
+            <div class="section-box">
+                <div class="section-num">3</div><div class="section-title">Qual ato precisa ser gratuito?</div>
+            </div>
+            <div class="text-[10px] px-2 mb-2">Marque o ato solicitado. Se for certidão, marque também o tipo desejado.</div>
+            <div class="grid grid-cols-12 gap-2 px-2">
+                <div class="col-span-8 space-y-1 text-[10px]" id="grupo-atos">
+                    <div class="flex items-start gap-2"><input type="checkbox" class="check-ato"> <b>Certidão de nascimento, casamento, óbito ou outra</b></div>
+                    <div class="flex gap-4 ml-6 font-bold blue-tj uppercase text-[9px]">
+                        Tipo da certidão: 
+                        <label class="font-normal text-black"><input type="checkbox"> Sem busca</label>
+                        <label class="font-normal text-black"><input type="checkbox"> Com busca</label>
+                        <label class="font-normal text-black"><input type="checkbox"> Inteiro teor</label>
+                    </div>
+                    <div class="flex items-center gap-2"><input type="checkbox" class="check-ato"> <b>Habilitação, registro de casamento e primeira certidão</b></div>
+                    <div class="flex items-center gap-2"><input type="checkbox" class="check-ato"> <b>Alteração extrajudicial de prenome e gênero (Retificação e Averbação), inclusive certidões correspondentes</b></div>
+                    <div class="flex items-center gap-2"><input type="checkbox" class="check-ato"> <b>Outro ato com previsão legal</b></div>
+                </div>
+                <div class="col-span-4 border p-2 rounded text-[10px] bg-gray-50">
+                    <p class="font-bold mb-2">Dados para localizar o ato (se souber):</p>
+                    <div class="flex mb-1">Livro: <input type="text" class="input-line ml-1"></div>
+                    <div class="flex mb-1">Folha: <input type="text" class="input-line ml-1"></div>
+                    <div class="flex">Termo: <input type="text" class="input-line ml-1"></div>
+                </div>
+            </div>
+            <div class="grid-row mt-2"><div class="col-span-12 flex"><span class="field-label">Descreva o ato e a finalidade (se necessário):</span><input type="text" class="input-line"></div></div>
+            <div class="flex gap-4 px-1 text-[10px] mt-1">
+                <span class="flex items-center">Livro: <input type="text" class="w-16 border-b ml-1"></span>
+                <span class="flex items-center">Folha: <input type="text" class="w-16 border-b ml-1"></span>
+                <span class="flex items-center">Termo: <input type="text" class="w-16 border-b ml-1"></span>
+            </div>
+
+            <!-- Seção 4 -->
+            <div class="section-box">
+                <div class="section-num">4</div><div class="section-title">Declaração</div>
+            </div>
+            <div class="text-[10px] text-justify px-2 space-y-1">
+                <p><b>Declaro, sob as penas da lei, que não disponho de recursos suficientes para suportar os emolumentos do ato indicado sem prejuízo de minha manutenção e da manutenção de minha família.</b></p>
+                <p><b>Declaro, ainda, que estou ciente de que:</b></p>
+                <p><b>a)</b> havendo fundadas razões para dúvida quanto à veracidade desta declaração, o registrador poderá suscitar a questão ao juízo competente, inclusive para eventual substituição da gratuidade pelo parcelamento;</p>
+                <p><b>b)</b> mesmo nessa hipótese, o ato será praticado de imediato, independentemente de prévia decisão sobre a gratuidade;</p>
+                <p><b>c)</b> se o benefício for posteriormente indeferido, poderão ser adotadas medidas extrajudiciais para cobrança dos emolumentos devidos;</p>
+                <p><b>d)</b> a prestação de informação falsa poderá gerar responsabilidade civil e criminal;</p>
+                <p><b>e)</b> salvo previsão legal em sentido diverso, a gratuidade não abrange serviços postais, remessas de documentos, diligências ou notificações.</p>
+            </div>
+
+            <div class="footer-text flex justify-between">
+                <span>Edição disponibilizada em 08/09/2026</span>
+                <span>000086910</span>
+                <span class="font-bold blue-tj">Página 1 de 2</span>
+            </div>
+        </div>
+
+        <!-- PÁGINA 2 -->
+<div class="a4-page html2pdf__page-break">
+        <div class="a4-page">
+            <div class="header-line flex justify-between items-center">
+                <div class="blue-tj font-black text-2xl uppercase italic">Assinaturas e Complementos</div>
+            </div>
+            <div class="text-[9px] text-gray-600 mb-2">Preencha os blocos complementares somente quando se aplicarem ao caso.</div>
+
+            <!-- Seção 5 -->
+            <div class="section-box">
+                <div class="section-num">5</div><div class="section-title">Local, data e assinatura da pessoa interessada</div>
+            </div>
+            <div class="grid grid-cols-2 gap-10 px-2 mt-4">
+                <div class="flex items-end"><span class="field-label">Local e data <span class="required-mark">*</span>:</span><input type="text" class="input-line obrigatorio" name="Local e Data"></div>
+                <div class="signature-box">Assinatura da pessoa interessada</div>
+            </div>
+
+            <div class="info-blue-box my-4">
+                <div class="text-xl">🔒</div>
+                <div class="text-[9px] blue-tj italic"><b>Proteção de dados:</b> as informações serão tratadas apenas para processamento do pedido, cumprimento de obrigação legal e eventual comunicação, com acesso restrito.</div>
+            </div>
+
+            <!-- Seção 6 -->
+            <div class="section-box">
+                <div class="section-num">6</div><div class="section-title">Representante legal ou assistente</div><div class="badge badge-serventia">Somente se houver</div>
+            </div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Nome completo:</span><input type="text" class="input-line"></div></div>
+            <div class="grid-row">
+                <div class="col-span-6 flex"><span class="field-label">CPF ou RG:</span><input type="text" class="input-line"></div>
+                <div class="col-span-6 flex"><span class="field-label">Telefone/e-mail:</span><input type="text" class="input-line"></div>
+            </div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Qualidade em que atua (Ex.: responsável legal, tutor, curador ou assistente):</span><input type="text" class="input-line"></div></div>
+            <div class="grid-row"><div class="col-span-12 flex"><span class="field-label">Documento comprobatório:</span><input type="text" class="input-line"></div></div>
+            <div class="flex justify-between items-end mt-4 px-2">
+                <div class="text-[8px] italic w-1/2">Declaro que atuo em nome ou em assistência da pessoa beneficiária e que as informações econômicas prestadas se referem à situação dessa pessoa.</div>
+                <div class="signature-box w-1/3">Assinatura do representante legal ou assistente</div>
+            </div>
+
+            <!-- Seção 7 -->
+            <div class="section-box">
+                <div class="section-num">7</div><div class="section-title">Assinatura a rogo</div><div class="badge badge-rogo">Se não souber ou não puder assinar</div>
+            </div>
+            <div class="text-[9px] px-2">A pedido da pessoa beneficiária, assino a presente declaração a rogo.</div>
+            <div class="grid-row mt-1"><div class="col-span-12 flex"><span class="field-label">Nome de quem assina a rogo:</span><input type="text" class="input-line"></div></div>
+            <div class="grid-row">
+                <div class="col-span-6 flex"><span class="field-label">CPF ou RG:</span><input type="text" class="input-line"></div>
+                <div class="col-span-6 flex"><span class="field-label">Telefone/e-mail:</span><input type="text" class="input-line"></div>
+            </div>
+            <div class="flex justify-between px-2 mt-4">
+                <div class="signature-box w-1/3">Assinatura a rogo</div>
+                <div class="thumb-box">Impressão digital da pessoa beneficiária (se possível)</div>
+            </div>
+
+            <!-- Seção 8 -->
+            <div class="section-box">
+                <div class="section-num">8</div><div class="section-title">Testemunhas da assinatura a rogo</div><div class="badge badge-rogo">Somente se houver assinatura a rogo</div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 px-2 mt-1">
+                <div class="border p-2 rounded text-[10px]">
+                    <b>TESTEMUNHA 1</b>
+                    <div class="flex mt-1">Nome: <input type="text" class="input-line ml-1"></div>
+                    <div class="flex mt-1">CPF ou RG: <input type="text" class="input-line ml-1"></div>
+                    <div class="flex mt-1">Telefone/e-mail: <input type="text" class="input-line ml-1"></div>
+                </div>
+                <div class="border p-2 rounded text-[10px]">
+                    <b>TESTEMUNHA 2</b>
+                    <div class="flex mt-1">Nome: <input type="text" class="input-line ml-1"></div>
+                    <div class="flex mt-1">CPF ou RG: <input type="text" class="input-line ml-1"></div>
+                    <div class="flex mt-1">Telefone/e-mail: <input type="text" class="input-line ml-1"></div>
+                </div>
+            </div>
+
+            <!-- Seção 9 -->
+            <div class="section-box">
+                <div class="section-num">9</div><div class="section-title">Certificação da presença</div><div class="badge badge-serventia">Preenchimento da Serventia</div>
+            </div>
+            <div class="text-[9px] px-2">Certifico e dou fé que as assinaturas e/ou a impressão digital foram apostas em minha presença, após a identificação das pessoas signatárias, ficando concedida a gratuidade para a prática do ato solicitado.</div>
+            <div class="grid-row mt-2">
+                <div class="col-span-6 flex"><span class="field-label">Local e data:</span><input type="text" class="input-line"></div>
+                <div class="col-span-6 flex"><span class="field-label">Oficial ou preposto:</span><input type="text" class="input-line"></div>
+            </div>
+            <div class="signature-box w-2/3 mx-auto">Assinatura e identificação funcional</div>
+
+            <div class="footer-text mt-auto pt-2">
+                <div class="flex gap-4 border-t-2 border-blue-800 pt-1">
+                    <div class="text-xl">📄</div>
+                    <div class="text-[8px] leading-tight text-justify">
+                        <b>BASE NORMATIVA:</b> Provimento CNJ n. 221/2026, Provimento CGJ/RN n. 07/2026, Lei Estadual n. 11.038/2021 (Arts. 45, incisos I a VII), Lei Federal n. 6.015/1973 (Art. 56, §§ 1º, 2º, 3º e 4º), Código de Normas CGJRN – Caderno Extrajudicial, Código de Processo Civil (Art. 98, inciso IX).
+                    </div>
+                </div>
+                <div class="flex justify-between mt-1">
+                    <span>Edição disponibilizada em 08/09/2026 - 000086910</span>
+                    <span class="font-bold blue-tj uppercase">Ano 2026 Edição 920 - Página 2 de 2</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Conferência (Preview PDF) -->
+    <div id="modal-conf" class="fixed inset-0 bg-black/80 hidden z-[100] flex flex-col items-center overflow-y-auto py-10">
+        <div class="bg-white p-4 w-full max-w-4xl rounded-t-xl flex justify-between items-center sticky top-0 z-[110] shadow-xl">
+            <h2 class="text-xl font-bold text-blue-900 uppercase">PRÉ-VISUALIZAÇÃO DA DECLARAÇÃO</h2>
+            <div class="flex gap-3">
+                <button onclick="fecharModal()" class="px-6 py-2 bg-gray-200 font-bold rounded-lg hover:bg-gray-300">EDITAR DADOS</button>
+                <button onclick="gerarPDF()" class="px-6 py-2 bg-green-700 text-white font-bold rounded-lg shadow hover:bg-green-800">BAIXAR PDF AGORA</button>
+            </div>
+        </div>
+        
+        <div id="preview-modal-container" class="bg-gray-300 p-8 shadow-inner">
+            <div id="preview-render-area"></div>
+        </div>
+    </div>
+
+    <script>
+        function validarEAbrirConferencia() {
+            const campos = document.querySelectorAll('.obrigatorio');
+            let erros = [];
+            
+            // Validação de inputs de texto
+            campos.forEach(campo => {
+                campo.classList.remove('input-error');
+                if (campo.value.trim() === "") {
+                    campo.classList.add('input-error');
+                    erros.push(campo.getAttribute('name'));
+                }
+            });
+
+            // Validação de Ato (Seção 3)
+            const atos = document.querySelectorAll('.check-ato:checked');
+            if (atos.length === 0) {
+                erros.push("Selecione pelo menos um Ato na Seção 3");
+                document.getElementById('grupo-atos').classList.add('bg-red-50', 'p-2', 'rounded');
+            } else {
+                document.getElementById('grupo-atos').classList.remove('bg-red-50');
+            }
+
+            if (erros.length > 0) {
+                alert("⚠️ ATENÇÃO! CAMPOS OBRIGATÓRIOS FALTANDO:\n\n- " + erros.join("\n- "));
+                return;
+            }
+
+            prepararPreview();
+        }
+
+        function prepararPreview() {
+            const renderArea = document.getElementById('preview-render-area');
+            const formContent = document.getElementById('form-content');
+            
+            // Sincroniza valores para o clone (inputs de texto e checkboxes)
+            const inputs = formContent.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    if (input.checked) input.setAttribute('checked', 'checked');
+                    else input.removeAttribute('checked');
+                } else {
+                    input.setAttribute('value', input.value);
+                }
+            });
+
+            renderArea.innerHTML = formContent.innerHTML;
+            document.getElementById('modal-conf').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-conf').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+       function gerarPDF() {
+    const element = document.getElementById('form-content');
+    const nomeInput = document.getElementById('beneficiario_nome');
+    const nome = (nomeInput && nomeInput.value.trim()) ? nomeInput.value.trim() : "Declaracao";
+
+    fecharModal();
+
+    const opt = {
+        margin: 0,
+        filename: `Declaracao_Hipossuficiencia_${nome.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            logging: false
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(element).save().catch(err => {
+        console.error("Erro ao gerar PDF:", err);
+        alert("Ocorreu um erro ao gerar o PDF. Verifique se as imagens estão acessíveis e tente novamente.");
+    });
+}
+    </script>
+</body>
+</html>
