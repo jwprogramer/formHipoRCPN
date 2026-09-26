@@ -16,9 +16,9 @@ export const FORM_INICIAL: FormularioHipossuficiencia = {
   beneficiarioMunicipioUF: '',
   beneficiarioCep: '',
   beneficiarioContato: '',
-  atoCertidao: true,
+  atoCertidao: false,
   certidaoTipos: {
-    semBusca: true,
+    semBusca: false,
     comBusca: false,
     inteiroTeor: false,
   },
@@ -55,30 +55,20 @@ export const FORM_INICIAL: FormularioHipossuficiencia = {
   tipoAssinaturaOficial: 'manual',
 };
 
-export function salvarRascunho(form: FormularioHipossuficiencia): void {
-  try {
-    localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(form));
-  } catch (e) {
-    console.error('Falha ao salvar rascunho:', e);
-  }
+export function salvarRascunho(_form: FormularioHipossuficiencia): void {
+  // Política de privacidade: não armazena dados de usuário
 }
 
 export function carregarRascunho(): FormularioHipossuficiencia | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.DRAFT);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error('Falha ao carregar rascunho:', e);
-    return null;
-  }
+  // Nenhum dado pessoal é recuperado ou armazenado
+  return null;
 }
 
 export function limparRascunho(): void {
   try {
     localStorage.removeItem(STORAGE_KEYS.DRAFT);
   } catch (e) {
-    console.error('Falha ao limpar rascunho:', e);
+    // Silently handle
   }
 }
 

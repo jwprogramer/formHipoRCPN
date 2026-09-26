@@ -56,6 +56,7 @@ export const App: React.FC = () => {
 
   // Initialize
   useEffect(() => {
+    limparRascunho();
     const padrao = carregarServentiaPadrao();
     if (padrao) setServentiaPadrao(padrao);
 
@@ -64,11 +65,6 @@ export const App: React.FC = () => {
       setViewMode('form');
     }
   }, []);
-
-  // Autosave
-  useEffect(() => {
-    salvarRascunho(form);
-  }, [form]);
 
   const addToast = (type: 'success' | 'error' | 'info', title: string, description?: string) => {
     const id = 'toast_' + Date.now() + Math.random().toString(36).substring(2, 5);

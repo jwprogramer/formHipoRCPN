@@ -15,7 +15,8 @@ import {
   Sparkles,
   RotateCcw,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ShieldAlert
 } from 'lucide-react';
 import { FormularioHipossuficiencia } from '../types';
 import { maskCPF, maskCEP, maskPhone, maskDate, consultarCep, isValidCPF, getDataAtualFormatada } from '../utils/masks';
@@ -119,6 +120,26 @@ export const InteractiveForm: React.FC<InteractiveFormProps> = ({
               Limpar
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Alerta de Privacidade e Segurança (LGPD) - Não Armazenamento de Dados */}
+      <div className="bg-amber-50/90 border border-amber-300 border-l-4 border-l-amber-600 p-4 rounded-xl shadow-xs flex items-start gap-3.5">
+        <div className="p-2 bg-amber-100 text-amber-800 rounded-lg shrink-0 mt-0.5">
+          <ShieldAlert className="w-5 h-5 text-amber-700" />
+        </div>
+        <div className="text-xs text-amber-950 leading-relaxed flex-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="font-extrabold text-amber-900 uppercase tracking-wide text-xs">
+              Aviso de Privacidade e Segurança (LGPD)
+            </span>
+            <span className="bg-amber-200/90 text-amber-900 font-bold text-[10px] px-2 py-0.5 rounded-full border border-amber-300">
+              Nenhum dado é armazenado
+            </span>
+          </div>
+          <p className="text-slate-700">
+            Para sua total tranquilidade e em conformidade com a <strong>LGPD (Lei Geral de Proteção de Dados)</strong>, informamos que <strong>não haverá armazenagem, retenção ou gravação de nenhum dado pessoal</strong> inserido pelo usuário. Todas as informações permanecem estritamente na memória volátil do seu navegador durante o preenchimento e são descartadas assim que a página é fechada ou recarregada. Nenhum dado é enviado a servidores externos.
+          </p>
         </div>
       </div>
 
@@ -1004,12 +1025,10 @@ export const InteractiveForm: React.FC<InteractiveFormProps> = ({
       {/* Barra de Ação Flutuante */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-3.5 px-6 shadow-2xl z-40">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-          <div className="hidden sm:block text-xs text-slate-600">
-            <span className="font-semibold text-slate-800">
-              {form.beneficiarioNome || 'Pessoa Beneficiária'}
-            </span>
-            <span className="text-slate-400 mx-2">·</span>
-            <span>Rascunho salvo automaticamente</span>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-600">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="font-semibold text-slate-800">Privacidade Garantida:</span>
+            <span>Nenhum dado pessoal do usuário é armazenado</span>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
