@@ -43,8 +43,7 @@ Este sistema elimina formulários manuais propensos a erros e burocracia, fornec
 - **Configuração de Serventia Padrão**:
   - Cartórios e serventias podem salvar seus dados institucionais (Nome do Cartório, Comarca, Titular/Oficial e Município) para agilizar atendimentos repetidos.
 - **Emissão Oficial**:
-  - Geração de **PDF em alta definição (300 DPI)** formato A4 oficial com layout exato do TJRN/CGJ.
-  - Botão de **Impressão Direta** formatado via CSS Print sem margens indesejadas ou cortes.
+  - **Impressão Direta e Exportação em PDF**: Formatação nativa de alta precisão via CSS Print (`@media print`), gerando PDFs vetoriais perfeitos ou envio direto à impressora da serventia através da função nativa do navegador ("Salvar como PDF"), sem perda de nitidez, serrilhamento ou distorções de canvas.
 - **Opções de Assinatura**:
   - Opção para assinatura física tradicional (campo com linha para assinatura de próprio punho ou a rogo com testemunhas).
   - Opção para aposição de assinatura digital qualificada (Gov.br / ICP-Brasil).
@@ -78,7 +77,7 @@ O modelo e as diretrizes do documento atendem a:
 - **Frontend**: [React 19](https://react.dev/) com [TypeScript](https://www.typescriptlang.org/)
 - **Estilização**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Bundler / Servidor Dev**: [Vite 6](https://vitejs.dev/)
-- **Renderização e Exportação de PDF**: [html2canvas-pro](https://www.npmjs.com/package/html2canvas-pro) & [jsPDF](https://github.com/parallax/jsPDF)
+- **Impressão e PDF**: Regras de folha A4 em CSS Print (`@media print`) com renderização vetorial nativa
 - **Ícones**: [Lucide React](https://lucide.dev/)
 
 ---
@@ -151,4 +150,6 @@ O modelo e as diretrizes do documento atendem a:
 1. Preencha os dados da Serventia e da Pessoa Beneficiária (e Representante, se houver).
 2. Selecione os atos do RCPN aos quais a gratuidade se destina.
 3. Escolha a modalidade de assinatura (manual ou digital).
-4. Clique em **"Baixar PDF"** para obter o documento gerado em alta definição pronto para assinatura, ou clique em **"Imprimir"** para enviá-lo diretamente à impressora da serventia.
+4. Clique em **"Imprimir / Salvar PDF"**:
+   - Para imprimir: selecione sua impressora física instalada.
+   - Para salvar em PDF: no diálogo de impressão do navegador, selecione no campo de destino a opção **"Salvar como PDF"** (o documento será gravado com layout idêntico, textos vetoriais nítidos e páginas A4 sem cortes).

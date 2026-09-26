@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Building2, 
   Printer, 
-  Download, 
   FileText, 
   Eye, 
   Split, 
@@ -26,8 +25,6 @@ import { InteractiveForm } from './components/InteractiveForm';
 import { DocumentPreview } from './components/DocumentPreview';
 import { ServentiaModal } from './components/ServentiaModal';
 import { ToastContainer, ToastMessage } from './components/Toast';
-import html2canvas from 'html2canvas-pro';
-import jsPDF from 'jspdf';
 
 type ViewMode = 'form' | 'preview' | 'split';
 
@@ -50,7 +47,6 @@ export const App: React.FC = () => {
   const [isServentiaModalOpen, setIsServentiaModalOpen] = useState(false);
   const [serventiaPadrao, setServentiaPadrao] = useState<ServentiaPadrao | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const documentPrintRef = useRef<HTMLDivElement | null>(null);
 
@@ -201,83 +197,6 @@ export const App: React.FC = () => {
     window.print();
   };
 
-  const handleBaixarPDF = async () => {
-    if (!form.beneficiarioNome?.trim()) {
-      addToast('info', 'Gerando documento...', 'Dica: preencha os dados da pessoa beneficiária para identificação.');
-    }
-
-    setIsGeneratingPdf(true);
-    addToast('info', 'Gerando PDF oficial...', 'Processando documento em alta resolução...');
-
-    try {
-      // Localiza as páginas no container dedicado não-oculto
-      const page1 = document.getElementById('pdf-export-page-1');
-      const page2 = document.getElementById('pdf-export-page-2');
-
-      if (!page1 || !page2) {
-        throw new Error('Páginas de exportação não foram encontradas na árvore de renderização.');
-      }
-
-      // Aguarda o carregamento das imagens
-      const imgs = Array.from(document.querySelectorAll('#pdf-render-source img')) as HTMLImageElement[];
-      await Promise.all(
-        imgs.map((img) => {
-          if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-          return new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve;
-          });
-        })
-      );
-
-      const canvasOptions = {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        imageTimeout: 5000,
-      };
-
-      const canvas1 = await html2canvas(page1, canvasOptions);
-      const imgData1 = canvas1.toDataURL('image/jpeg', 0.98);
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true,
-      });
-
-      pdf.addImage(imgData1, 'JPEG', 0, 0, 210, 297);
-
-      const canvas2 = await html2canvas(page2, canvasOptions);
-      const imgData2 = canvas2.toDataURL('image/jpeg', 0.98);
-
-      pdf.addPage('a4', 'portrait');
-      pdf.addImage(imgData2, 'JPEG', 0, 0, 210, 297);
-
-      const nomeLimpo = (form.beneficiarioNome || 'Declaracao')
-        .trim()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9]/g, '_');
-
-      pdf.save(`Declaracao_Hipossuficiencia_${nomeLimpo}.pdf`);
-
-      addToast('success', 'PDF baixado com sucesso!', 'O arquivo foi salvo no seu computador/celular.');
-    } catch (err: any) {
-      console.error('Erro detalhado ao gerar PDF:', err);
-      addToast(
-        'error',
-        'Falha na geração direta do PDF',
-        'Utilize o botão "Imprimir" e selecione "Salvar como PDF" como impressora.'
-      );
-    } finally {
-      setIsGeneratingPdf(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
       {/* Barra de Navegação Superior */}
@@ -357,21 +276,11 @@ export const App: React.FC = () => {
 
             <button
               onClick={handleImprimir}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-600 rounded-lg shadow-xs transition cursor-pointer"
-              title="Imprimir documento"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-xs transition cursor-pointer active:scale-95"
+              title="Imprimir ou Salvar como PDF no navegador"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Imprimir</span>
-            </button>
-
-            <button
-              onClick={handleBaixarPDF}
-              disabled={isGeneratingPdf}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-xs transition cursor-pointer disabled:opacity-50"
-              title="Baixar arquivo PDF"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">PDF</span>
+              <span>Imprimir / Salvar PDF</span>
             </button>
           </div>
         </div>
@@ -387,9 +296,7 @@ export const App: React.FC = () => {
               onReset={handleResetForm}
               onPreencherExemplo={handlePreencherExemplo}
               onConfigurarServentia={() => setIsServentiaModalOpen(true)}
-              onBaixarPDF={handleBaixarPDF}
               onImprimir={handleImprimir}
-              isGeneratingPdf={isGeneratingPdf}
             />
           </div>
         )}
@@ -398,20 +305,15 @@ export const App: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="no-print bg-white border border-slate-200 rounded-xl p-3 mb-6 shadow-xs max-w-2xl w-full flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-700">
-                Visualização do documento oficial oficial (2 páginas A4)
+                Visualização do documento oficial (2 páginas A4)
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleImprimir}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-[#004a80] hover:bg-[#003660] rounded-lg cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#004a80] hover:bg-[#003660] rounded-lg cursor-pointer transition active:scale-95"
+                  title="Imprimir ou Salvar como PDF"
                 >
-                  <Printer className="w-3.5 h-3.5" /> Imprimir
-                </button>
-                <button
-                  onClick={handleBaixarPDF}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" /> Baixar PDF
+                  <Printer className="w-3.5 h-3.5" /> Imprimir / Salvar PDF
                 </button>
               </div>
             </div>
@@ -430,9 +332,7 @@ export const App: React.FC = () => {
                 onReset={handleResetForm}
                 onPreencherExemplo={handlePreencherExemplo}
                 onConfigurarServentia={() => setIsServentiaModalOpen(true)}
-                onBaixarPDF={handleBaixarPDF}
                 onImprimir={handleImprimir}
-                isGeneratingPdf={isGeneratingPdf}
               />
             </div>
 
@@ -446,17 +346,11 @@ export const App: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleImprimir}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-white bg-[#004a80] hover:bg-[#003660] rounded-md transition cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#004a80] hover:bg-[#003660] rounded-md transition cursor-pointer active:scale-95"
+                    title="Imprimir ou Salvar como PDF"
                   >
                     <Printer className="w-3.5 h-3.5" />
-                    <span>Imprimir</span>
-                  </button>
-                  <button
-                    onClick={handleBaixarPDF}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-md transition cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>PDF</span>
+                    <span>Imprimir / Salvar PDF</span>
                   </button>
                 </div>
               </div>
@@ -471,27 +365,6 @@ export const App: React.FC = () => {
           </div>
         )}
       </main>
-
-      {/* Container Dedicado para Renderização de PDF em Alta Precisão (Sem cortes ou display:none) */}
-      <div
-        id="pdf-render-source"
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          left: '-9999px',
-          top: 0,
-          width: '210mm',
-          minWidth: '210mm',
-          maxWidth: '210mm',
-          background: '#ffffff',
-          zIndex: -9999,
-          pointerEvents: 'none',
-          visibility: 'visible',
-          opacity: 1,
-        }}
-      >
-        <DocumentPreview form={form} idPrefix="pdf-export" />
-      </div>
 
       {/* Impressão Nativa (Apenas para CSS @media print quando acionado pelo browser) */}
       <div className="hidden print:block print:w-full print:m-0 print:p-0">

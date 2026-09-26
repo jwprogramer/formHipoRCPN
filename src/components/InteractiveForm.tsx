@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   Building2, 
   User, 
-  Download,
   Printer, 
   MapPin, 
   Phone, 
@@ -28,9 +27,7 @@ interface InteractiveFormProps {
   onReset: () => void;
   onPreencherExemplo: () => void;
   onConfigurarServentia: () => void;
-  onBaixarPDF?: () => void;
   onImprimir?: () => void;
-  isGeneratingPdf?: boolean;
 }
 
 export const InteractiveForm: React.FC<InteractiveFormProps> = ({
@@ -39,9 +36,7 @@ export const InteractiveForm: React.FC<InteractiveFormProps> = ({
   onReset,
   onPreencherExemplo,
   onConfigurarServentia,
-  onBaixarPDF,
   onImprimir,
-  isGeneratingPdf,
 }) => {
   const [loadingCep, setLoadingCep] = useState(false);
   const [cpfValido, setCpfValido] = useState<boolean | null>(null);
@@ -1036,21 +1031,11 @@ export const InteractiveForm: React.FC<InteractiveFormProps> = ({
               <button
                 type="button"
                 onClick={onImprimir}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-2.5 px-5 rounded-xl border border-slate-300 transition cursor-pointer active:scale-95"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#004a80] hover:bg-[#003660] text-white font-extrabold text-sm py-2.5 px-6 rounded-xl shadow-md transition active:scale-95 cursor-pointer"
+                title="Imprimir ou Salvar como PDF no navegador"
               >
-                <Printer className="w-4 h-4 text-slate-600" />
-                Imprimir
-              </button>
-            )}
-            {onBaixarPDF && (
-              <button
-                type="button"
-                onClick={onBaixarPDF}
-                disabled={isGeneratingPdf}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#004a80] hover:bg-[#003660] text-white font-extrabold text-sm py-2.5 px-6 rounded-xl shadow-md transition active:scale-95 cursor-pointer disabled:opacity-50"
-              >
-                <Download className="w-4 h-4" />
-                {isGeneratingPdf ? 'Gerando PDF...' : 'Baixar PDF'}
+                <Printer className="w-4 h-4 text-white" />
+                Imprimir / Salvar como PDF
               </button>
             )}
           </div>
