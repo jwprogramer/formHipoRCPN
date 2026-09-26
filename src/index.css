@@ -12,6 +12,15 @@
 }
 
 /* Folha A4 Oficial */
+.official-document-wrapper {
+  color: #1e293b;
+  background-color: transparent;
+}
+
+.official-document-wrapper * {
+  border-color: #cbd5e1;
+}
+
 .a4-page {
   width: 210mm;
   min-height: 297mm;
@@ -47,7 +56,7 @@
     print-color-adjust: exact !important;
   }
 
-  .no-print, header, footer, .modal, .toast-container {
+  .no-print, header, footer, .modal, .toast-container, #pdf-render-source {
     display: none !important;
   }
 

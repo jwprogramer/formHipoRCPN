@@ -3,7 +3,6 @@ import { FormularioHipossuficiencia, ServentiaPadrao } from '../types';
 const STORAGE_KEYS = {
   DRAFT: 'tjrn_hipo_draft_v1',
   SERVENTIA_DEFAULT: 'tjrn_hipo_serventia_padrao',
-  HISTORY: 'tjrn_hipo_history_v1',
 };
 
 export const FORM_INICIAL: FormularioHipossuficiencia = {
@@ -101,42 +100,3 @@ export function carregarServentiaPadrao(): ServentiaPadrao | null {
   }
 }
 
-export function salvarNoHistorico(form: FormularioHipossuficiencia): void {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.HISTORY);
-    const list: FormularioHipossuficiencia[] = raw ? JSON.parse(raw) : [];
-    const itemComId = {
-      ...form,
-      id: form.id || 'dec_' + Date.now(),
-      criadoEm: new Date().toISOString(),
-    };
-    // Manter até 50 itens mais recentes
-    const novaLista = [itemComId, ...list.filter(i => i.id !== itemComId.id)].slice(0, 50);
-    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(novaLista));
-  } catch (e) {
-    console.error('Falha ao salvar no histórico:', e);
-  }
-}
-
-export function carregarHistorico(): FormularioHipossuficiencia[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.HISTORY);
-    if (!raw) return [];
-    return JSON.parse(raw);
-  } catch (e) {
-    return [];
-  }
-}
-
-export function removerDoHistorico(id: string): FormularioHipossuficiencia[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.HISTORY);
-    if (!raw) return [];
-    const list: FormularioHipossuficiencia[] = JSON.parse(raw);
-    const atualizado = list.filter(item => item.id !== id);
-    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(atualizado));
-    return atualizado;
-  } catch (e) {
-    return [];
-  }
-}

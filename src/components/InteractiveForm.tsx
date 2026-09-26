@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Building2, 
   User, 
-  FileCheck2, 
+  Download,
+  Printer, 
   MapPin, 
   Phone, 
   Calendar, 
@@ -25,8 +26,10 @@ interface InteractiveFormProps {
   onChange: (updated: Partial<FormularioHipossuficiencia>) => void;
   onReset: () => void;
   onPreencherExemplo: () => void;
-  onAbrirConferencia: () => void;
   onConfigurarServentia: () => void;
+  onBaixarPDF?: () => void;
+  onImprimir?: () => void;
+  isGeneratingPdf?: boolean;
 }
 
 export const InteractiveForm: React.FC<InteractiveFormProps> = ({
@@ -34,8 +37,10 @@ export const InteractiveForm: React.FC<InteractiveFormProps> = ({
   onChange,
   onReset,
   onPreencherExemplo,
-  onAbrirConferencia,
   onConfigurarServentia,
+  onBaixarPDF,
+  onImprimir,
+  isGeneratingPdf,
 }) => {
   const [loadingCep, setLoadingCep] = useState(false);
   const [cpfValido, setCpfValido] = useState<boolean | null>(null);
@@ -996,7 +1001,7 @@ export const InteractiveForm: React.FC<InteractiveFormProps> = ({
         </div>
       </div>
 
-      {/* Floating Action Banner */}
+      {/* Barra de Ação Flutuante */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-3.5 px-6 shadow-2xl z-40">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="hidden sm:block text-xs text-slate-600">
@@ -1007,14 +1012,29 @@ export const InteractiveForm: React.FC<InteractiveFormProps> = ({
             <span>Rascunho salvo automaticamente</span>
           </div>
 
-          <button
-            type="button"
-            onClick={onAbrirConferencia}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#004a80] hover:bg-[#003660] text-white font-extrabold text-sm py-3 px-8 rounded-xl shadow-lg transition-transform active:scale-95 cursor-pointer"
-          >
-            <FileCheck2 className="w-5 h-5" />
-            CONFERIR E GERAR DECLARAÇÃO
-          </button>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {onImprimir && (
+              <button
+                type="button"
+                onClick={onImprimir}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-2.5 px-5 rounded-xl border border-slate-300 transition cursor-pointer active:scale-95"
+              >
+                <Printer className="w-4 h-4 text-slate-600" />
+                Imprimir
+              </button>
+            )}
+            {onBaixarPDF && (
+              <button
+                type="button"
+                onClick={onBaixarPDF}
+                disabled={isGeneratingPdf}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#004a80] hover:bg-[#003660] text-white font-extrabold text-sm py-2.5 px-6 rounded-xl shadow-md transition active:scale-95 cursor-pointer disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                {isGeneratingPdf ? 'Gerando PDF...' : 'Baixar PDF'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

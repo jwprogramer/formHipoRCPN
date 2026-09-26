@@ -6,7 +6,6 @@ import {
   FileText, 
   Eye, 
   Split, 
-  History, 
   CheckCircle2, 
   FileCheck2,
   Sparkles,
@@ -20,19 +19,14 @@ import {
   carregarRascunho, 
   limparRascunho, 
   salvarServentiaPadrao, 
-  carregarServentiaPadrao,
-  salvarNoHistorico,
-  carregarHistorico,
-  removerDoHistorico
+  carregarServentiaPadrao
 } from './utils/storage';
 import { getDataAtualFormatada } from './utils/masks';
 import { InteractiveForm } from './components/InteractiveForm';
 import { DocumentPreview } from './components/DocumentPreview';
-import { ConferenceModal } from './components/ConferenceModal';
 import { ServentiaModal } from './components/ServentiaModal';
-import { HistoryModal } from './components/HistoryModal';
 import { ToastContainer, ToastMessage } from './components/Toast';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 
 type ViewMode = 'form' | 'preview' | 'split';
@@ -53,12 +47,8 @@ export const App: React.FC = () => {
   });
 
   const [viewMode, setViewMode] = useState<ViewMode>('split');
-  const [isConferenceOpen, setIsConferenceOpen] = useState(false);
   const [isServentiaModalOpen, setIsServentiaModalOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [historico, setHistorico] = useState<FormularioHipossuficiencia[]>([]);
   const [serventiaPadrao, setServentiaPadrao] = useState<ServentiaPadrao | null>(null);
-  const [errosValidacao, setErrosValidacao] = useState<string[]>([]);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -66,7 +56,6 @@ export const App: React.FC = () => {
 
   // Initialize
   useEffect(() => {
-    setHistorico(carregarHistorico());
     const padrao = carregarServentiaPadrao();
     if (padrao) setServentiaPadrao(padrao);
 
@@ -200,12 +189,6 @@ export const App: React.FC = () => {
     return erros;
   };
 
-  const handleAbrirConferencia = () => {
-    const erros = validarCampos();
-    setErrosValidacao(erros);
-    setIsConferenceOpen(true);
-  };
-
   const handleSalvarServentia = (dados: ServentiaPadrao) => {
     salvarServentiaPadrao(dados);
     setServentiaPadrao(dados);
@@ -219,60 +202,81 @@ export const App: React.FC = () => {
   };
 
   const handleImprimir = () => {
-    salvarNoHistorico(form);
-    setHistorico(carregarHistorico());
     window.print();
   };
 
   const handleBaixarPDF = async () => {
-    const erros = validarCampos();
-    if (erros.length > 0) {
-      setErrosValidacao(erros);
-      setIsConferenceOpen(true);
-      return;
+    if (!form.beneficiarioNome?.trim()) {
+      addToast('info', 'Gerando documento...', 'Dica: preencha os dados da pessoa beneficiária para identificação.');
     }
 
     setIsGeneratingPdf(true);
-    addToast('info', 'Gerando PDF oficial...', 'Aguarde alguns segundos enquanto o documento é processado.');
+    addToast('info', 'Gerando PDF oficial...', 'Processando documento em alta resolução...');
 
     try {
-      // Find pages 1 and 2
-      const pageElements = document.querySelectorAll<HTMLElement>('.official-document-wrapper .a4-page');
-      if (pageElements.length < 2) {
-        throw new Error('Não foi possível localizar as páginas da declaração.');
+      // Localiza as páginas no container dedicado não-oculto
+      const page1 = document.getElementById('pdf-export-page-1');
+      const page2 = document.getElementById('pdf-export-page-2');
+
+      if (!page1 || !page2) {
+        throw new Error('Páginas de exportação não foram encontradas na árvore de renderização.');
       }
+
+      // Aguarda o carregamento das imagens
+      const imgs = Array.from(document.querySelectorAll('#pdf-render-source img')) as HTMLImageElement[];
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
+        })
+      );
+
+      const canvasOptions = {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        imageTimeout: 5000,
+      };
+
+      const canvas1 = await html2canvas(page1, canvasOptions);
+      const imgData1 = canvas1.toDataURL('image/jpeg', 0.98);
 
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
+        compress: true,
       });
 
-      for (let i = 0; i < pageElements.length; i++) {
-        const pageEl = pageElements[i];
-        const canvas = await html2canvas(pageEl, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-        });
+      pdf.addImage(imgData1, 'JPEG', 0, 0, 210, 297);
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        if (i > 0) {
-          pdf.addPage('a4', 'portrait');
-        }
-        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-      }
+      const canvas2 = await html2canvas(page2, canvasOptions);
+      const imgData2 = canvas2.toDataURL('image/jpeg', 0.98);
 
-      const nomeClean = (form.beneficiarioNome || 'Declaracao').trim().replace(/[^a-zA-Z0-9]/g, '_');
-      pdf.save(`Declaracao_Hipossuficiencia_${nomeClean}.pdf`);
+      pdf.addPage('a4', 'portrait');
+      pdf.addImage(imgData2, 'JPEG', 0, 0, 210, 297);
 
-      salvarNoHistorico(form);
-      setHistorico(carregarHistorico());
-      addToast('success', 'PDF baixado com sucesso!', 'Declaração salva e arquivada no histórico.');
-    } catch (err) {
-      console.error('Erro ao gerar PDF:', err);
-      addToast('error', 'Falha ao gerar o PDF', 'Tente usar a opção "Imprimir" e salvar como PDF pelo navegador.');
+      const nomeLimpo = (form.beneficiarioNome || 'Declaracao')
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9]/g, '_');
+
+      pdf.save(`Declaracao_Hipossuficiencia_${nomeLimpo}.pdf`);
+
+      addToast('success', 'PDF baixado com sucesso!', 'O arquivo foi salvo no seu computador/celular.');
+    } catch (err: any) {
+      console.error('Erro detalhado ao gerar PDF:', err);
+      addToast(
+        'error',
+        'Falha na geração direta do PDF',
+        'Utilize o botão "Imprimir" e selecione "Salvar como PDF" como impressora.'
+      );
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -347,15 +351,6 @@ export const App: React.FC = () => {
           {/* Botões de Ação do Topo */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsHistoryOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-blue-100 hover:text-white hover:bg-white/10 rounded-lg transition border border-white/10 cursor-pointer"
-              title="Ver histórico de declarações preenchidas"
-            >
-              <History className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Histórico ({historico.length})</span>
-            </button>
-
-            <button
               onClick={() => setIsServentiaModalOpen(true)}
               className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-blue-100 hover:text-white hover:bg-white/10 rounded-lg transition border border-white/10 cursor-pointer"
               title="Configurar serventia padrão do cartório"
@@ -395,8 +390,10 @@ export const App: React.FC = () => {
               onChange={handleFormChange}
               onReset={handleResetForm}
               onPreencherExemplo={handlePreencherExemplo}
-              onAbrirConferencia={handleAbrirConferencia}
               onConfigurarServentia={() => setIsServentiaModalOpen(true)}
+              onBaixarPDF={handleBaixarPDF}
+              onImprimir={handleImprimir}
+              isGeneratingPdf={isGeneratingPdf}
             />
           </div>
         )}
@@ -436,8 +433,10 @@ export const App: React.FC = () => {
                 onChange={handleFormChange}
                 onReset={handleResetForm}
                 onPreencherExemplo={handlePreencherExemplo}
-                onAbrirConferencia={handleAbrirConferencia}
                 onConfigurarServentia={() => setIsServentiaModalOpen(true)}
+                onBaixarPDF={handleBaixarPDF}
+                onImprimir={handleImprimir}
+                isGeneratingPdf={isGeneratingPdf}
               />
             </div>
 
@@ -477,41 +476,38 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Documento Oculto / Impressão Nativa (Apenas para CSS @media print quando acionado pelo browser) */}
+      {/* Container Dedicado para Renderização de PDF em Alta Precisão (Sem cortes ou display:none) */}
+      <div
+        id="pdf-render-source"
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          left: '-9999px',
+          top: 0,
+          width: '210mm',
+          minWidth: '210mm',
+          maxWidth: '210mm',
+          background: '#ffffff',
+          zIndex: -9999,
+          pointerEvents: 'none',
+          visibility: 'visible',
+          opacity: 1,
+        }}
+      >
+        <DocumentPreview form={form} idPrefix="pdf-export" />
+      </div>
+
+      {/* Impressão Nativa (Apenas para CSS @media print quando acionado pelo browser) */}
       <div className="hidden print:block print:w-full print:m-0 print:p-0">
-        <DocumentPreview form={form} />
+        <DocumentPreview form={form} idPrefix="print-native" />
       </div>
 
       {/* Modais */}
-      <ConferenceModal
-        isOpen={isConferenceOpen}
-        onClose={() => setIsConferenceOpen(false)}
-        form={form}
-        onImprimir={handleImprimir}
-        onBaixarPDF={handleBaixarPDF}
-        erros={errosValidacao}
-      />
-
       <ServentiaModal
         isOpen={isServentiaModalOpen}
         onClose={() => setIsServentiaModalOpen(false)}
         serventiaAtual={serventiaPadrao}
         onSalvar={handleSalvarServentia}
-      />
-
-      <HistoryModal
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        historico={historico}
-        onSelecionar={(item) => {
-          setForm(item);
-          addToast('success', 'Declaração carregada do histórico');
-        }}
-        onExcluir={(id) => {
-          const atualizado = removerDoHistorico(id);
-          setHistorico(atualizado);
-          addToast('info', 'Item excluído do histórico');
-        }}
       />
 
       {/* Toasts */}
